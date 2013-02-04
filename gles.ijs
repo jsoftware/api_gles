@@ -532,7 +532,7 @@ gl_GetFloatv=: 3 : 0
 gl_mp=: +/ . *
 
 gl_Rotate=: 3 : 0
-(gl_iden'') gl_rotate y
+(gl_I'') gl_Rotate y
 :
 mat=. x
 'a x y z'=. y
@@ -562,11 +562,11 @@ m2=. m, 0
 
 m3=. 0 0 0 1
 
-mat (+/ . *) (|:_4]\m0,m1,m2,m3)
+mat (+/ . *)~ (_4]\m0,m1,m2,m3)
 )
 
 gl_Translate=: 3 : 0
-(gl_iden'') gl_translate y
+(gl_I'') gl_Translate y
 :
 mat=. x
 'x y z'=. y
@@ -576,11 +576,11 @@ m1=. 0 1 0 0
 m2=. 0 0 1 0
 m3=. x,y,x,1
 
-mat (+/ . *) (|:_4]\m0,m1,m2,m3)
+mat (+/ . *)~ (_4]\m0,m1,m2,m3)
 )
 
 gl_Scale=: 3 : 0
-(gl_iden'') gl_scale y
+(gl_I'') gl_Scale y
 :
 mat=. x
 'x y z'=. y
@@ -590,7 +590,41 @@ m1=. 0,y,0 0
 m2=. 0 0,z,0
 m3=. 0 0 0 1
 
-mat (+/ . *) (|:_4]\m0,m1,m2,m3)
+mat (+/ . *)~ (_4]\m0,m1,m2,m3)
+)
+gl_makeshader=: 4 : 0
+err=. ''
+shader=. glCreateShader x
+glShaderSource shader; 1; (,symdat <'y'); <<0
+glCompileShader shader
+glGetShaderiv shader; GL_COMPILE_STATUS; st=. ,_1
+if. ({.st) = GL_FALSE do.
+  glGetShaderiv shader; GL_INFO_LOG_LENGTH; ln=. ,_1
+  strInfoLog=. (1+{.ln)#{.a.
+  glGetShaderInfoLog shader; ({.ln); (<0); strInfoLog
+  err=. strInfoLog
+end.
+err;shader
+)
+
+gl_makeprogram=: 3 : 0
+err=. ''
+program=. glCreateProgram''
+for_shader. y do.
+  glAttachShader program ; shader
+end.
+glLinkProgram program
+glGetProgramiv program; GL_LINK_STATUS; st=. ,_1
+if. ({.st) = GL_FALSE do.
+  glGetProgramiv program; GL_INFO_LOG_LENGTH; ln=. ,_1
+  strInfoLog=. (1+{.ln)#{.a.
+  glGetProgramInfoLog program; ({.ln); (<0); strInfoLog
+  err=. strInfoLog
+end.
+for_shader. y do.
+  glDetachShader program ; shader
+end.
+err;program
 )
 gluLookAt=: 3 : 0
 'eye center up'=. _3]\,>y
