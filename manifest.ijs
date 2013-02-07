@@ -1,12 +1,12 @@
 NB. api/gles manifest
 
-CAPTION=: 'OpenGL ES 2 API'
+CAPTION=: 'Modern OpenGL API'
 
 DESCRIPTION=: 0 : 0
-OpenGL ES 2 API definitions
+OpenGL 2.1 and OpenGL ES 2.0 API definitions
 )
 
-VERSION=: '1.0.1'
+VERSION=: '1.0.2'
 
 FILES=: 0 : 0
 gles.ijs
