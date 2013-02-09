@@ -1,6 +1,12 @@
 coclass 'jgles'
 
 GL_ES_VERSION_2_0=: IFIOS +. UNAME-:'Android'
+3 : 0''
+if. 0~: 4!:0<'EMU_GLES' do.EMU_GLES=: 0 end.
+''
+)
+
+GLPROC_Initialized=: -.IFWIN
 
 3 : 0''
 if. UNAME-:'Win' do.
@@ -67,11 +73,11 @@ p=. n }. y
 ''
 )
 wglPROC=: 3 : 0
-if. -.IFWIN do. '' return. end.
-libgles cddefgl_jgles_ &.> GLES_FUNC
+if. GLPROC_Initialized do. '' return. end.
 (p,&.><'PROC_jgles_')=: wglGetProcAddress "0 p=. ({.~ i.&' ')&.> GLES_FUNC
 f=. 0~: ". &> (p,&.><'PROC_jgles_')
 cddefgl2_jgles_ &.> f#GLES_FUNC
+GLPROC_Initialized=: 1
 ''
 )
 GLES_FUNC_2=: 0 : 0
@@ -2665,10 +2671,10 @@ glExtGetProgramBinarySourceQCOM > n i i *c *i      : void glExtGetProgramBinaryS
 glStartTilingQCOM > n i i i i i                    : void glStartTilingQCOM (GLuint, GLuint, GLuint, GLuint, GLbitfield);
 glEndTilingQCOM > n i                              : void glEndTilingQCOM (GLbitfield);
 )
-libgles cddefgl &.> GLES_FUNC=: <@dtb@({.~ i.&':');._2 (IFIOS+.'Android'-:UNAME){::GLES_FUNC_2;GLES_FUNC_ES2
+libgles cddefgl &.> GLES_FUNC=: <@dtb@({.~ i.&':');._2 (EMU_GLES+.IFIOS+.'Android'-:UNAME){::GLES_FUNC_2;GLES_FUNC_ES2
 4!:55 'GLES_FUNC_2';'GLES_FUNC_ES2'
 3 : 0''
-if. IFIOS +. 'Android'-:UNAME do.
+if. EMU_GLES+.IFIOS+.'Android'-:UNAME do.
   GL_ES_VERSION_2_0=: 1
   GL_DEPTH_BUFFER_BIT=: 16b00000100
   GL_STENCIL_BUFFER_BIT=: 16b00000400
@@ -7957,11 +7963,10 @@ m3=. 0 0 0 1
 mat (+/ . *) (_4]\m0,m1,m2,m3)
 )
 gl_makeshader=: 4 : 0
-err=. ''
 shader=. glCreateShader x
 if. '#version'-.@-:8{.y do.
-  hdr=. LF,~ GL_ES_VERSION_2_0{::'#version 120';'#version 100'
-  if. GL_ES_VERSION_2_0 do.
+  hdr=. LF,~ GL_ES_VERSION_2_0{::'#version 110';'#version 100'
+  if. GL_ES_VERSION_2_0>EMU_GLES do.
     if. x = GL_FRAGMENT_SHADER do.
       hdr=. hdr, '#ifdef GL_FRAGMENT_PRECISION_HIGH', LF, 'precision highp float;', LF, '#else', LF, 'precision mediump float;', LF, '#endif', LF
     end.
@@ -7975,12 +7980,13 @@ glCompileShader shader
 glGetShaderiv shader; GL_COMPILE_STATUS; st=. ,_1
 if. ({.st) = GL_FALSE do.
   err=. gl_infolog shader
+  (err,LF,y);shader
+else.
+  '';shader
 end.
-err;shader
 )
 
 gl_makeprogram=: 3 : 0
-err=. ''
 'vsrc fsrc'=. y
 if. 0= (*#vsrc)+.(*#fsrc) do. 'no shader source';0 return. end.
 program=. glCreateProgram''
@@ -7999,8 +8005,10 @@ glGetProgramiv program; GL_LINK_STATUS; st=. ,_1
 if. ({.st) = GL_FALSE do.
   glDeleteProgram program
   err=. gl_infolog program
+  err;program
+else.
+  '';program
 end.
-err;program
 )
 gl_infolog=: 3 : 0
 ln=. ,_1
@@ -8012,22 +8020,11 @@ elseif. do.
   'Not a shader or a program' return.
 end.
 
-strInfoLog=. (1+{.ln)#{.a.
+strInfoLog=. ({.ln)#' '
 if. glIsShader y do.
   glGetShaderInfoLog y; ({.ln); (<0); strInfoLog
 elseif. glIsProgram y do.
   glGetProgramInfoLog y; ({.ln); (<0); strInfoLog
 end.
 err=. strInfoLog
-)
-gluLookAt=: 3 : 0
-'eye center up'=. _3]\,>y
-F=. center - eye
-f=. (% +/&.:*:)F
-UPP=. (% +/&.:*:)up
-s=. f ((1&|.@:[ * _1&|.@:]) - _1&|.@:[ * 1&|.@:]) UPP
-u=. s ((1&|.@:[ * _1&|.@:]) - _1&|.@:[ * 1&|.@:]) f
-M=. _4]\ s, 0, u, 0, (-f), 0 0 0 0 1 
-glMultMatrixd <,@:|: M
-glTranslated -eye
 )
