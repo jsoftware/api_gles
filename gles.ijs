@@ -7944,7 +7944,7 @@ mat=. x
 m0=. 1 0 0 0
 m1=. 0 1 0 0
 m2=. 0 0 1 0
-m3=. x,y,x,1
+m3=. x,y,z,1
 
 mat (+/ . *) (_4]\m0,m1,m2,m3)
 )
@@ -8027,4 +8027,65 @@ elseif. glIsProgram y do.
   glGetProgramInfoLog y; ({.ln); (<0); strInfoLog
 end.
 err=. strInfoLog
+)
+glu_LookAt=: 3 : 0
+'eye center up'=. _3]\,>y
+F=. center - eye
+f=. (% +/&.:*:)F
+UPP=. (% +/&.:*:)up
+s=. f ((1&|.@:[ * _1&|.@:]) - _1&|.@:[ * 1&|.@:]) UPP
+u=. s ((1&|.@:[ * _1&|.@:]) - _1&|.@:[ * 1&|.@:]) f
+M=. _4]\ s, 0, u, 0, (-f), 0 0 0 0 1
+M gl_Translate -eye
+)
+
+glu_Perspective=: 3 : 0
+'fovy aspect znear zfar'=. y
+m=. gl_I''
+if. (0=znear-zfar) +. (0=180|fovy) +. (0=aspect) do. m return. end.
+
+xymax=. znear * 3&o. fovy * 1p1%360
+ymin=. -xymax
+xmin=. -xymax
+
+width=. xymax - xmin
+height=. xymax - ymin
+
+depth=. zfar - znear
+q=. -(zfar + znear) % depth
+qn=. _2 * (zfar * znear) % depth
+
+w=. 2 * znear % width
+w=. w % aspect
+h=. 2 * znear % height
+
+m=. w (<0 0)}m
+m=. h (<1 1)}m
+m=. q (<2 2)}m
+m=. _1 (<2 3)}m
+m=. qn (<3 2)}m
+m=. 0 (<3 3)}m
+m
+)
+glu_Perspective0=: 3 : 0
+'fovy aspect znear zfar'=. y
+size=. znear * 3&o. fovy * 1p1%360
+gl_Frustum (-size*aspect), (size*aspect), (-size), (size), znear, zfar
+)
+
+gl_Frustum=: 3 : 0
+'left right bottom top near far'=. y
+
+m=. (2 * near % (right - left)), 0 0 0
+
+m=. m, 0 ,(2 * near % (top - bottom)), 0 0
+
+m=. m, (right + left) % (right - left)
+m=. m, (top + bottom) % (top - bottom)
+m=. m, -(far + near) % (far - near)
+m=. m, _1
+
+m=. m, 0 0, (_2 * far * near % (far - near)), 0
+
+_4[\m
 )
