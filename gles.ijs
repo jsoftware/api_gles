@@ -7892,18 +7892,14 @@ end.
 ''
 )
 
-gl_I=: 3 : 0
-4 4$5{.1
-)
+gl_I=: =@i.@(4"_)
 
 gl_GetFloatv=: 3 : 0
 1&fc ,y
 )
 
 gl_mp=: +/ . *
-gl_Rotate=: 3 : 0
-(gl_I'') gl_Rotate y
-:
+gl_Rotate=: (gl_I'')&$: : (4 : 0)
 mat=. x
 'a x y z'=. y
 s=. 1 o. a * 1p1 % 180
@@ -7918,49 +7914,120 @@ zz=. z * z
 m=. (xx * (1 - c)) + c
 m=. m, (xy * (1 - c)) - z * s
 m=. m, (xz * (1 - c)) + y * s
-m0=. m, 0
+m=. m, 0
 
-m=. (xy * (1 - c)) + z * s
+m=. m, (xy * (1 - c)) + z * s
 m=. m, (yy * (1 - c)) + c
 m=. m, (yz * (1 - c)) - x * s
-m1=. m, 0
+m=. m, 0
 
-m=. (xz * (1 - c)) - y * s
+m=. m, (xz * (1 - c)) - y * s
 m=. m, (yz * (1 - c)) + x * s
 m=. m, (zz * (1 - c)) + c
-m2=. m, 0
+m=. m, 0
 
-m3=. 0 0 0 1
+m=. m, 0 0 0 1
 
-mat (+/ . *) (_4]\m0,m1,m2,m3)
+mat (+/ . *) _4]\m
 )
 
-gl_Translate=: 3 : 0
-(gl_I'') gl_Translate y
-:
+gl_Translate=: (gl_I'')&$: : (4 : 0)
 mat=. x
 'x y z'=. y
 
-m0=. 1 0 0 0
-m1=. 0 1 0 0
-m2=. 0 0 1 0
-m3=. x,y,z,1
+m=. 1 0 0 0
+m=. m, 0 1 0 0
+m=. m, 0 0 1 0
+m=. m, x,y,z,1
 
-mat (+/ . *) (_4]\m0,m1,m2,m3)
+mat (+/ . *) _4]\m
 )
 
-gl_Scale=: 3 : 0
-(gl_I'') gl_Scale y
-:
+gl_Scale=: (gl_I'')&$: : (4 : 0)
 mat=. x
 'x y z'=. y
 
-m0=. x,0 0 0
-m1=. 0,y,0 0
-m2=. 0 0,z,0
-m3=. 0 0 0 1
+m=. x,0 0 0
+m=. m,  0,y,0 0
+m=. m,  0 0,z,0
+m=. m,  0 0 0 1
 
-mat (+/ . *) (_4]\m0,m1,m2,m3)
+mat (+/ . *) _4]\m
+)
+gl_Perspective=: (gl_I'')&$: : (4 : 0)
+mat=. x
+'fovy aspect znear zfar'=. y
+if. (0=znear-zfar) +. (0=180|fovy) +. (0=aspect) do. mat return. end.
+
+xymax=. znear * 3&o. fovy * 1p1%360
+ymin=. -xymax
+xmin=. -xymax
+
+width=. xymax - xmin
+height=. xymax - ymin
+
+depth=. zfar - znear
+q=. -(zfar + znear) % depth
+qn=. _2 * (zfar * znear) % depth
+
+w=. 2 * znear % width
+w=. w % aspect
+h=. 2 * znear % height
+
+m=. w, 0 0 0
+m=. m, 0, h, 0 0
+m=. m, 0 0, q, _1
+m=. m, 0 0, qn, 0
+
+mat (+/ . *) _4[\m
+)
+gl_Perspective0=: (gl_I'')&$: : (4 : 0)
+mat=. x
+'fovy aspect znear zfar'=. y
+size=. znear * 3&o. fovy * 1p1%360
+gl_Frustum (-size*aspect), (size*aspect), (-size), (size), znear, zfar
+)
+
+gl_Frustum=: (gl_I'')&$: : (4 : 0)
+mat=. x
+'left right bottom top near far'=. y
+if. (0=right-left) +. (0=top-bottom) +. (0=far-near) do. mat return. end.
+
+m=. (2 * near % (right - left)), 0 0 0
+
+m=. m, 0 ,(2 * near % (top - bottom)), 0 0
+
+m=. m, (right + left) % (right - left)
+m=. m, (top + bottom) % (top - bottom)
+m=. m, -(far + near) % (far - near)
+m=. m, _1
+
+m=. m, 0 0, (_2 * far * near % (far - near)), 0
+
+mat (+/ . *) _4[\m
+)
+
+gl_Ortho=: 3 : 0
+mat=. x
+'left right bottom top near far'=. y
+if. (0=right-left) +. (0=top-bottom) +. (0=far-near) do. mat return. end.
+
+r_l=. right - left
+t_b=. top - bottom
+f_n=. far - near
+tx=. - (right + left) % (right - left)
+ty=. - (top + bottom) % (top - bottom)
+tz=. - (far + near) % (far - near)
+
+m=. (2 % r_l), 0 0, tx
+
+m=. m, 0, (2 % t_b), 0, ty
+
+m=. m, 0 0, (2 % f_n), tz
+
+m=. m, 0 0 0 1
+
+mat (+/ . *) _4[\m
 )
 gl_makeshader=: 4 : 0
 shader=. glCreateShader x
@@ -8037,55 +8104,4 @@ s=. f ((1&|.@:[ * _1&|.@:]) - _1&|.@:[ * 1&|.@:]) UPP
 u=. s ((1&|.@:[ * _1&|.@:]) - _1&|.@:[ * 1&|.@:]) f
 M=. _4]\ s, 0, u, 0, (-f), 0 0 0 0 1
 M gl_Translate -eye
-)
-
-glu_Perspective=: 3 : 0
-'fovy aspect znear zfar'=. y
-m=. gl_I''
-if. (0=znear-zfar) +. (0=180|fovy) +. (0=aspect) do. m return. end.
-
-xymax=. znear * 3&o. fovy * 1p1%360
-ymin=. -xymax
-xmin=. -xymax
-
-width=. xymax - xmin
-height=. xymax - ymin
-
-depth=. zfar - znear
-q=. -(zfar + znear) % depth
-qn=. _2 * (zfar * znear) % depth
-
-w=. 2 * znear % width
-w=. w % aspect
-h=. 2 * znear % height
-
-m=. w (<0 0)}m
-m=. h (<1 1)}m
-m=. q (<2 2)}m
-m=. _1 (<2 3)}m
-m=. qn (<3 2)}m
-m=. 0 (<3 3)}m
-m
-)
-glu_Perspective0=: 3 : 0
-'fovy aspect znear zfar'=. y
-size=. znear * 3&o. fovy * 1p1%360
-gl_Frustum (-size*aspect), (size*aspect), (-size), (size), znear, zfar
-)
-
-gl_Frustum=: 3 : 0
-'left right bottom top near far'=. y
-
-m=. (2 * near % (right - left)), 0 0 0
-
-m=. m, 0 ,(2 * near % (top - bottom)), 0 0
-
-m=. m, (right + left) % (right - left)
-m=. m, (top + bottom) % (top - bottom)
-m=. m, -(far + near) % (far - near)
-m=. m, _1
-
-m=. m, 0 0, (_2 * far * near % (far - near)), 0
-
-_4[\m
 )
