@@ -3,10 +3,10 @@ coclass 'jgles'
 GL_ES_VERSION_2_0=: IFIOS +. UNAME-:'Android'
 3 : 0''
 if. 0~: 4!:0<'EMU_GLES' do.EMU_GLES=: 0 end.
+EMU_GLES=: EMU_GLES > IFIOS +. UNAME-:'Android'
 ''
 )
-
-GLPROC_Initialized=: -.IFWIN
+GLPROC_Initialized=: IFWIN +. 'Darwin'-:UNAME
 
 3 : 0''
 if. UNAME-:'Win' do.
@@ -45,12 +45,19 @@ if. UNAME-:'Win' do.
   wglGetProcAddress=: 'opengl32.dll wglGetProcAddress > x *c'&(15!:0)
 elseif. UNAME-:'Linux' do.
   libgles=: <'libGL.so.1 '
+  glXGetProcAddress=: 'libGL.so.1 glXGetProcAddress > x *c'&(15!:0)
 elseif. UNAME-:'Android' do.
   libgles=: <'libGLESv2.so'
 elseif. UNAME-:'Darwin' do.
   libgles=: <'/System/Library/Frameworks/OpenGL.framework/Libraries/libGL.dylib'
 end.
 ''
+)
+aglGetProcAddress=: 3 : 0
+y=. <'_',>y
+if. 0= 'libdl.dylib NSIsSymbolNameDefined > s *c'&(15!:0) y do. 0 return. end.
+if. 0= symbol=. 'libdl.dylib NSLookupAndBindSymbol > x *c'&(15!:0) y do. 0 return. end.
+'libdl.dylib NSAddressOfSymbol > x x'&(15!:0) symbol
 )
 cddefgl=: 4 : 0
 y=. dtb (y i. ':'){.y
@@ -74,7 +81,8 @@ p=. n }. y
 )
 wglPROC=: 3 : 0
 if. GLPROC_Initialized do. '' return. end.
-(p,&.><'PROC_jgles_')=: wglGetProcAddress "0 p=. ({.~ i.&' ')&.> GLES_FUNC
+g=. aglGetProcAddress`wglGetProcAddress`glXGetProcAddress@.(('Darwin';'Win')i.<UNAME)
+(p,&.><'PROC_jgles_')=: g "0 p=. ({.~ i.&' ')&.> GLES_FUNC
 f=. 0~: ". &> (p,&.><'PROC_jgles_')
 cddefgl2_jgles_ &.> f#GLES_FUNC
 GLPROC_Initialized=: 1
