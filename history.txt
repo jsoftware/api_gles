@@ -1,4 +1,4 @@
 api/gles - change history
 
-== 1.0.0/6 ==
+== 1.0.0/7 ==
  * initial release

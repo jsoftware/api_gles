@@ -2,11 +2,13 @@ coclass 'jgles'
 
 GL_ES_VERSION_2_0=: IFIOS +. UNAME-:'Android'
 3 : 0''
+if. 0~: 4!:0<'ADD_GLSL_VERSION' do. ADD_GLSL_VERSION=: 0 end.
+if. 0~: 4!:0<'ADD_GLSL_ES_VERSION' do. ADD_GLSL_ES_VERSION=: 0 end.
 if. 0~: 4!:0<'EMU_GLES' do.EMU_GLES=: 0 end.
 EMU_GLES=: EMU_GLES > IFIOS +. UNAME-:'Android'
 ''
 )
-GLPROC_Initialized=: IFWIN +. 'Darwin'-:UNAME
+GLPROC_Initialized=: -. IFWIN +. 'Darwin'-:UNAME
 
 3 : 0''
 if. UNAME-:'Win' do.
@@ -8040,7 +8042,12 @@ mat (+/ . *) _4[\m
 gl_makeshader=: 4 : 0
 shader=. glCreateShader x
 if. '#version'-.@-:8{.y do.
-  hdr=. LF,~ GL_ES_VERSION_2_0{::'#version 110';'#version 100'
+  hdr=. ''
+  if. GL_ES_VERSION_2_0 do.
+    if. ADD_GLSL_ES_VERSION do. hdr=. LF,~ '#version ',":ADD_GLSL_ES_VERSION end.
+  else.
+    if. ADD_GLSL_VERSION do. hdr=. LF,~ '#version ',":ADD_GLSL_VERSION end.
+  end.
   if. GL_ES_VERSION_2_0>EMU_GLES do.
     if. x = GL_FRAGMENT_SHADER do.
       hdr=. hdr, '#ifdef GL_FRAGMENT_PRECISION_HIGH', LF, 'precision highp float;', LF, '#else', LF, 'precision mediump float;', LF, '#endif', LF
@@ -8064,7 +8071,11 @@ end.
 gl_makeprogram=: 3 : 0
 'vsrc fsrc'=. y
 if. 0= (*#vsrc)+.(*#fsrc) do. 'no shader source';0 return. end.
-program=. glCreateProgram''
+try.
+  program=. glCreateProgram''
+catch.
+  0;~ 'glCreateProgram error',LF,(5!:6<'glCreateProgram'),LF,'cder : ',":cder'' return.
+end.
 if. #vsrc do.
   'err shader'=. GL_VERTEX_SHADER gl_makeshader vsrc
   if. #err do. err;0 [ glDeleteProgram program return. end.
