@@ -8,7 +8,8 @@ if. 0~: 4!:0<'EMU_GLES' do.EMU_GLES=: 0 end.
 EMU_GLES=: EMU_GLES > IFIOS +. UNAME-:'Android'
 ''
 )
-GLPROC_Initialized=: -. IFWIN +. 'Darwin'-:UNAME
+
+GLPROC_Initialized=: -. IFWIN
 
 3 : 0''
 if. UNAME-:'Win' do.
