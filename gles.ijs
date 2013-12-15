@@ -1,51 +1,57 @@
 coclass 'jgles'
 
-GL_ES_VERSION_2_0=: IFIOS +. UNAME-:'Android'
+GL_ES_VERSION_2_0=: IFIOS +. (UNAME-:'Android') +. 0-:(1 0&-:@('libGLESv2.dll glGetError i'&cd ::cder))`1:@.IFUNIX ''
 3 : 0''
 if. 0~: 4!:0<'ADD_GLSL_VERSION' do. ADD_GLSL_VERSION=: 0 end.
 if. 0~: 4!:0<'ADD_GLSL_ES_VERSION' do. ADD_GLSL_ES_VERSION=: 0 end.
 if. 0~: 4!:0<'EMU_GLES' do.EMU_GLES=: 0 end.
 EMU_GLES=: EMU_GLES > IFIOS +. UNAME-:'Android'
+EMU_GLES=: EMU_GLES +. IFWIN *. 0~:GL_ES_VERSION_2_0
 ''
 )
 
-GLPROC_Initialized=: -. IFWIN
+GLPROC_Initialized=: -. IFWIN > EMU_GLES
 
 3 : 0''
 if. UNAME-:'Win' do.
-  libgles=: <'opengl32.dll'
-  OBJ_BITMAP=: 7
-  SRCCOPY=: 16bcc0020
-  SIZEBITMAP=: 24
-  DIB_RGB_COLORS=: 0
+  if. EMU_GLES do.
+    libgles=: <'libGLESv2.dll'
+    glXGetProcAddress=: 'libEGL.dll eglGetProcAddress > x *c'&(15!:0)
+  else.
+    libgles=: <'opengl32.dll'
+    OBJ_BITMAP=: 7
+    SRCCOPY=: 16bcc0020
+    SIZEBITMAP=: 24
+    DIB_RGB_COLORS=: 0
 
-  BitBlt=: 'gdi32 BitBlt i x i i i i x i i i'&(15!:0)
-  ChoosePixelFormat=: 'gdi32 ChoosePixelFormat > i x *c'&(15!:0)
-  CreateCompatibleBitmap=: 'gdi32 CreateCompatibleBitmap > x x i i'&(15!:0)
-  CreateCompatibleDC=: 'gdi32 CreateCompatibleDC > x x'&(15!:0)
-  CreateDIBSection=: 'gdi32 CreateDIBSection x x *c i *x x i'&(15!:0)
-  CreateFont=: 'gdi32 CreateFontA x i i i i i i i i i i i i i *c'&(15!:0)
-  DeleteDC=: 'gdi32 DeleteDC > i x'&(15!:0)
-  ResetDC=: 'gdi32 ResetDC > i x'&(15!:0)
-  DeleteObject=: 'gdi32 DeleteObject > i x'&(15!:0)
-  GetCurrentObject=: 'gdi32 GetCurrentObject > x x i'&(15!:0)
-  GetObject=: 'gdi32 GetObjectW > i x i x'&(15!:0)
-  GetDC=: 'user32 GetDC > x x'&(15!:0)
-  ReleaseDC=: 'user32 ReleaseDC > i x x'&(15!:0)
-  SelectObject=: 'gdi32 SelectObject > x x x'&(15!:0)
-  SetPixelFormat=: 'gdi32 SetPixelFormat > i x i *c'&(15!:0)
-  SwapBuffers=: 'gdi32 SwapBuffers > i x'&(15!:0)
+    BitBlt=: 'gdi32 BitBlt i x i i i i x i i i'&(15!:0)
+    ChoosePixelFormat=: 'gdi32 ChoosePixelFormat > i x *c'&(15!:0)
+    CreateCompatibleBitmap=: 'gdi32 CreateCompatibleBitmap > x x i i'&(15!:0)
+    CreateCompatibleDC=: 'gdi32 CreateCompatibleDC > x x'&(15!:0)
+    CreateDIBSection=: 'gdi32 CreateDIBSection x x *c i *x x i'&(15!:0)
+    CreateFont=: 'gdi32 CreateFontA x i i i i i i i i i i i i i *c'&(15!:0)
+    DeleteDC=: 'gdi32 DeleteDC > i x'&(15!:0)
+    ResetDC=: 'gdi32 ResetDC > i x'&(15!:0)
+    DeleteObject=: 'gdi32 DeleteObject > i x'&(15!:0)
+    GetCurrentObject=: 'gdi32 GetCurrentObject > x x i'&(15!:0)
+    GetObject=: 'gdi32 GetObjectW > i x i x'&(15!:0)
+    GetDC=: 'user32 GetDC > x x'&(15!:0)
+    ReleaseDC=: 'user32 ReleaseDC > i x x'&(15!:0)
+    SelectObject=: 'gdi32 SelectObject > x x x'&(15!:0)
+    SetPixelFormat=: 'gdi32 SetPixelFormat > i x i *c'&(15!:0)
+    SwapBuffers=: 'gdi32 SwapBuffers > i x'&(15!:0)
 
-  wglCreateContext=: 'opengl32.dll wglCreateContext > x x'&(15!:0)
-  wglDeleteContext=: 'opengl32.dll wglDeleteContext > i x'&(15!:0)
-  wglGetCurrentContext=: 'opengl32.dll wglGetCurrentContext > x'&(15!:0)
-  wglGetCurrentDC=: 'opengl32.dll wglGetCurrentDC > x'&(15!:0)
-  wglMakeCurrent=: 'opengl32.dll wglMakeCurrent > i x x'&(15!:0)
-  wglSwapBuffers=: 'opengl32.dll wglSwapBuffers > i x'&(15!:0)
-  wglUseFontBitmapsA=: 'opengl32.dll wglUseFontBitmapsA i x i i i'&(15!:0)
-  wglUseFontOutlinesA=: 'opengl32.dll wglUseFontOutlinesA i x i i i f f i *f'&(15!:0)
+    wglCreateContext=: 'opengl32.dll wglCreateContext > x x'&(15!:0)
+    wglDeleteContext=: 'opengl32.dll wglDeleteContext > i x'&(15!:0)
+    wglGetCurrentContext=: 'opengl32.dll wglGetCurrentContext > x'&(15!:0)
+    wglGetCurrentDC=: 'opengl32.dll wglGetCurrentDC > x'&(15!:0)
+    wglMakeCurrent=: 'opengl32.dll wglMakeCurrent > i x x'&(15!:0)
+    wglSwapBuffers=: 'opengl32.dll wglSwapBuffers > i x'&(15!:0)
+    wglUseFontBitmapsA=: 'opengl32.dll wglUseFontBitmapsA i x i i i'&(15!:0)
+    wglUseFontOutlinesA=: 'opengl32.dll wglUseFontOutlinesA i x i i i f f i *f'&(15!:0)
 
-  wglGetProcAddress=: 'opengl32.dll wglGetProcAddress > x *c'&(15!:0)
+    wglGetProcAddress=: 'opengl32.dll wglGetProcAddress > x *c'&(15!:0)
+  end.
 elseif. UNAME-:'Linux' do.
   libgles=: <'libGL.so.1 '
   glXGetProcAddress=: 'libGL.so.1 glXGetProcAddress > x *c'&(15!:0)
