@@ -8,7 +8,7 @@ OpenGL 2.0 and OpenGL ES 2.0 API definitions
 see jwiki http://www.jsoftware.com/jwiki/OpenGL%20ES
 )
 
-VERSION=: '1.0.12'
+VERSION=: '1.0.13'
 
 FILES=: 0 : 0
 gles.ijs

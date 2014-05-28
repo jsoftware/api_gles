@@ -3,8 +3,6 @@ coclass 'jgles'
 GL_DX_ANGLE=: 0-:(1 0&-:@('libGLESv2.dll glGetError i'&cd ::cder))`1:@.IFUNIX ''
 GL_ES_VERSION_2_0=: IFIOS +. (UNAME-:'Android') +. GL_DX_ANGLE
 3 : 0''
-if. 0~: 4!:0<'ADD_GLSL_VERSION' do. ADD_GLSL_VERSION=: 0 end.
-if. 0~: 4!:0<'ADD_GLSL_ES_VERSION' do. ADD_GLSL_ES_VERSION=: 0 end.
 if. 0~: 4!:0<'EMU_GLES' do.EMU_GLES=: 0 end.
 EMU_GLES=: EMU_GLES > IFIOS +. UNAME-:'Android'
 EMU_GLES=: EMU_GLES +. GL_DX_ANGLE
@@ -97,6 +95,10 @@ f=. 0~: ". &> (p,&.><'PROC_jgles_')
 cddefgl2_jgles_ &.> f#GLES_FUNC
 GLPROC_Initialized=: 1
 ''
+)
+wglGLSL=: 3 : 0
+if. 0= p=. glGetString GL_SHADING_LANGUAGE_VERSION do. 0 return. end.
+100&#.@(2&{.)@(".;._2) '.',~ ({.~ i.&' ') dlb (memr 0 _1 2,~ p) ([ -. -.) '0123456789. '
 )
 GLES_FUNC_2=: 0 : 0
 glClearIndex > n f                                 : void glClearIndex (GLfloat);
@@ -7906,6 +7908,70 @@ else.
   GL_EXT_x11_sync_object=: 1
   GL_AMD_multi_draw_indirect=: 1
   GL_EXT_framebuffer_multisample_blit_scaled=: 1
+  GL_CONTEXT_CORE_PROFILE_BIT=: 1
+  GL_CONTEXT_COMPATIBILITY_PROFILE_BIT=: 2
+  GL_LINES_ADJACENCY=: 16b000a
+  GL_LINE_STRIP_ADJACENCY=: 16b000b
+  GL_TRIANGLES_ADJACENCY=: 16b000c
+  GL_TRIANGLE_STRIP_ADJACENCY=: 16b000d
+  GL_PROGRAM_POINT_SIZE=: 16b8642
+  GL_MAX_GEOMETRY_TEXTURE_IMAGE_UNITS=: 16b8c29
+  GL_FRAMEBUFFER_ATTACHMENT_LAYERED=: 16b8da7
+  GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS=: 16b8da8
+  GL_GEOMETRY_SHADER=: 16b8dd9
+  GL_GEOMETRY_VERTICES_OUT=: 16b8916
+  GL_GEOMETRY_INPUT_TYPE=: 16b8917
+  GL_GEOMETRY_OUTPUT_TYPE=: 16b8918
+  GL_MAX_GEOMETRY_UNIFORM_COMPONENTS=: 16b8ddf
+  GL_MAX_GEOMETRY_OUTPUT_VERTICES=: 16b8de0
+  GL_MAX_GEOMETRY_TOTAL_OUTPUT_COMPONENTS=: 16b8de1
+  GL_MAX_VERTEX_OUTPUT_COMPONENTS=: 16b9122
+  GL_MAX_GEOMETRY_INPUT_COMPONENTS=: 16b9123
+  GL_MAX_GEOMETRY_OUTPUT_COMPONENTS=: 16b9124
+  GL_MAX_FRAGMENT_INPUT_COMPONENTS=: 16b9125
+  GL_CONTEXT_PROFILE_MASK=: 16b9126
+  GL_DEPTH_CLAMP=: 16b864f
+  GL_QUADS_FOLLOW_PROVOKING_VERTEX_CONVENTION=: 16b8e4c
+  GL_FIRST_VERTEX_CONVENTION=: 16b8e4d
+  GL_LAST_VERTEX_CONVENTION=: 16b8e4e
+  GL_PROVOKING_VERTEX=: 16b8e4f
+  GL_TEXTURE_CUBE_MAP_SEAMLESS=: 16b884f
+  GL_MAX_SERVER_WAIT_TIMEOUT=: 16b9111
+  GL_OBJECT_TYPE=: 16b9112
+  GL_SYNC_CONDITION=: 16b9113
+  GL_SYNC_STATUS=: 16b9114
+  GL_SYNC_FLAGS=: 16b9115
+  GL_SYNC_FENCE=: 16b9116
+  GL_SYNC_GPU_COMMANDS_COMPLETE=: 16b9117
+  GL_UNSIGNALED=: 16b9118
+  GL_SIGNALED=: 16b9119
+  GL_ALREADY_SIGNALED=: 16b911a
+  GL_TIMEOUT_EXPIRED=: 16b911b
+  GL_CONDITION_SATISFIED=: 16b911c
+  GL_WAIT_FAILED=: 16b911d
+  GL_TIMEOUT_IGNORED=: _1
+  GL_SYNC_FLUSH_COMMANDS_BIT=: 16b00000001
+  GL_SAMPLE_POSITION=: 16b8e50
+  GL_SAMPLE_MASK=: 16b8e51
+  GL_SAMPLE_MASK_VALUE=: 16b8e52
+  GL_MAX_SAMPLE_MASK_WORDS=: 16b8e59
+  GL_TEXTURE_2D_MULTISAMPLE=: 16b9100
+  GL_PROXY_TEXTURE_2D_MULTISAMPLE=: 16b9101
+  GL_TEXTURE_2D_MULTISAMPLE_ARRAY=: 16b9102
+  GL_PROXY_TEXTURE_2D_MULTISAMPLE_ARRAY=: 16b9103
+  GL_TEXTURE_BINDING_2D_MULTISAMPLE=: 16b9104
+  GL_TEXTURE_BINDING_2D_MULTISAMPLE_ARRAY=: 16b9105
+  GL_TEXTURE_SAMPLES=: 16b9106
+  GL_TEXTURE_FIXED_SAMPLE_LOCATIONS=: 16b9107
+  GL_SAMPLER_2D_MULTISAMPLE=: 16b9108
+  GL_INT_SAMPLER_2D_MULTISAMPLE=: 16b9109
+  GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE=: 16b910a
+  GL_SAMPLER_2D_MULTISAMPLE_ARRAY=: 16b910b
+  GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY=: 16b910c
+  GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY=: 16b910d
+  GL_MAX_COLOR_TEXTURE_SAMPLES=: 16b910e
+  GL_MAX_DEPTH_TEXTURE_SAMPLES=: 16b910f
+  GL_MAX_INTEGER_SAMPLES=: 16b9110
 end.
 ''
 )
@@ -8049,22 +8115,6 @@ mat (+/ . *) _4[\m
 )
 gl_makeshader=: 4 : 0
 shader=. glCreateShader x
-if. '#version'-.@-:8{.y do.
-  hdr=. ''
-  if. GL_ES_VERSION_2_0 do.
-    if. ADD_GLSL_ES_VERSION do. hdr=. LF,~ '#version ',":ADD_GLSL_ES_VERSION end.
-  else.
-    if. ADD_GLSL_VERSION do. hdr=. LF,~ '#version ',":ADD_GLSL_VERSION end.
-  end.
-  if. GL_DX_ANGLE+.GL_ES_VERSION_2_0>EMU_GLES do.
-    if. x = GL_FRAGMENT_SHADER do.
-      hdr=. hdr, '#ifdef GL_FRAGMENT_PRECISION_HIGH', LF, 'precision highp float;', LF, '#else', LF, 'precision mediump float;', LF, '#endif', LF
-    end.
-  else.
-    hdr=. hdr, '#define lowp', LF, '#define mediump', LF, '#define highp', LF
-  end.
-  y=. hdr,y
-end.
 glShaderSource shader; 1; (,symdat <'y'); <<0
 glCompileShader shader
 glGetShaderiv shader; GL_COMPILE_STATUS; st=. ,_1
@@ -8077,7 +8127,7 @@ end.
 )
 
 gl_makeprogram=: 3 : 0
-'vsrc fsrc'=. y
+'vsrc fsrc gsrc'=. 3{.boxopen y
 if. 0= (*#vsrc)+.(*#fsrc) do. 'no shader source';0 return. end.
 try.
   program=. glCreateProgram''
@@ -8091,6 +8141,11 @@ if. #vsrc do.
 end.
 if. #fsrc do.
   'err shader'=. GL_FRAGMENT_SHADER gl_makeshader fsrc
+  if. #err do. err;0 [ glDeleteProgram program return. end.
+  glAttachShader program ; shader
+end.
+if. #gsrc do.
+  'err shader'=. GL_GEOMETRY_SHADER gl_makeshader gsrc
   if. #err do. err;0 [ glDeleteProgram program return. end.
   glAttachShader program ; shader
 end.
