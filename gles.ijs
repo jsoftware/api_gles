@@ -1,8 +1,8 @@
 coclass 'jgles'
 
 GL_DX_ANGLE=: 0-:(1 0&-:@('libGLESv2.dll glGetError i'&cd ::cder))`1:@.IFUNIX ''
+GLES_3=: 0-:(1 0&-:@('libGLESv3.so glGetError i'&cd ::cder))`1:@.('Android'-.@-:UNAME) ''
 3 : 0''
-if. 0~: 4!:0<'GLES_3' do. GLES_3=: 0 end.
 if. 0~: 4!:0<'EMU_GLES' do.EMU_GLES=: 0 end.
 EMU_GLES=: EMU_GLES > IFIOS +. UNAME-:'Android'
 EMU_GLES=: EMU_GLES +. GL_DX_ANGLE
