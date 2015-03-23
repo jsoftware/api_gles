@@ -1,21 +1,22 @@
 coclass 'jgles'
-
-GL_DX_ANGLE=: 0-:(1 0&-:@('libGLESv2.dll glGetError i'&cd ::cder))`1:@.IFUNIX ''
-GLES_3=: 0-:(1 0&-:@('libGLESv3.so glGetError i'&cd ::cder))`1:@.('Android'-.@-:UNAME) ''
 3 : 0''
-if. 0~: 4!:0<'EMU_GLES' do.EMU_GLES=: 0 end.
-EMU_GLES=: EMU_GLES > IFIOS +. UNAME-:'Android'
-EMU_GLES=: EMU_GLES +. GL_DX_ANGLE
-GLES_VERSION=: ((GLES_3>GL_DX_ANGLE){2 3) * IFIOS +. (UNAME-:'Android') +. EMU_GLES
+GLES_3=: 0-:(1 0&-:@('libGLESv3.so glGetError i'&cd ::cder))`1:@.('Android'-.@-:UNAME) ''
+GLES_3=: GLES_3 +. 0-:(1 0&-:@('libGLESv3.dll glGetError i'&cd ::cder))`1:@.IFUNIX ''
+GLES=. 0-:(1 0&-:@('libGLESv2.dll glGetError i'&cd ::cder))`1:@.IFUNIX ''
+GLES=. GLES +. GLES_3 +. IFIOS +. UNAME-:'Android'
+GLES_VERSION=: (GLES_3{2 3) * GLES
+if. IFWIN*.IFQT do.
+  GLES_VERSION=: GLES_VERSION * 0~: (".@:wd :: 1:) 'qopenglmod'
+end.
 ''
 )
 
-GLPROC_Initialized=: -. IFWIN > EMU_GLES
+GLPROC_Initialized=: -. IFWIN > 0~:GLES_VERSION
 
 3 : 0''
 if. UNAME-:'Win' do.
-  if. EMU_GLES do.
-    libgles=: <'libGLESv2.dll'
+  if. GLES_VERSION do.
+    libgles=: (3=GLES_VERSION){'libGLESv2.dll';'libGLESv3.dll'
     glXGetProcAddress=: 'libEGL.dll eglGetProcAddress > x *c'&(15!:0)
   else.
     libgles=: <'opengl32.dll'
@@ -3198,10 +3199,10 @@ glVertexAttribIFormat > n i i i i                  : void glVertexAttribIFormat 
 glVertexAttribBinding > n i i                      : void glVertexAttribBinding (GLuint, GLuint);
 glVertexBindingDivisor > n i i                     : void glVertexBindingDivisor (GLuint, GLuint);
 )
-libgles cddefgl &.> GLES_FUNC=: <@dtb@({.~ i.&':');._2 (EMU_GLES+.IFIOS+.'Android'-:UNAME){::GLES_FUNC_4;GLES_FUNC_ES3
+libgles cddefgl &.> GLES_FUNC=: <@dtb@({.~ i.&':');._2 (0~:GLES_VERSION){::GLES_FUNC_4;GLES_FUNC_ES3
 4!:55 'GLES_FUNC_4';'GLES_FUNC_ES3'
 3 : 0''
-if. EMU_GLES+.IFIOS+.'Android'-:UNAME do.
+if. GLES_VERSION do.
   GL_ES_VERSION_2_0=: 1
   GL_DEPTH_BUFFER_BIT=: 16b00000100
   GL_STENCIL_BUFFER_BIT=: 16b00000400
