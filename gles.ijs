@@ -1,12 +1,12 @@
 coclass 'jgles'
 3 : 0''
-GLES_3=: 0-:(1 0&-:@('libGLESv3.so glGetError i'&cd ::cder))`1:@.('Android'-.@-:UNAME) ''
-GLES_3=: GLES_3 +. 0-:(1 0&-:@('libGLESv3.dll glGetError i'&cd ::cder))`1:@.IFUNIX ''
+GLES_3=. 0-:(1 0&-:@('libGLESv3.so glGetError i'&cd ::cder))`1:@.('Android'-.@-:UNAME) ''
+GLES_3=. GLES_3 +. 0-:(1 0&-:@('libGLESv3.dll glGetError i'&cd ::cder))`1:@.IFUNIX ''
 GLES=. 0-:(1 0&-:@('libGLESv2.dll glGetError i'&cd ::cder))`1:@.IFUNIX ''
 GLES=. GLES +. GLES_3 +. IFIOS +. UNAME-:'Android'
-GLES_VERSION=: (GLES_3{2 3) * GLES
-if. IFWIN*.IFQT do.
-  GLES_VERSION=: GLES_VERSION * 0~: ".@:wd 'qopenglmod'
+GLES_VERSION=: (GLES_VERSION"_)^:(0=4!:0<'GLES_VERSION') (GLES_3{2 3) * GLES
+if. IFQT do.
+  GLES_VERSION=: GLES_VERSION * 0~: {. ".@:wd 'qopenglmod'
 end.
 ''
 )
@@ -19,7 +19,14 @@ if. UNAME-:'Win' do.
     libgles=: (3=GLES_VERSION){'libGLESv2.dll';'libGLESv3.dll'
     glXGetProcAddress=: 'libEGL.dll eglGetProcAddress > x *c'&(15!:0)
   else.
-    libgles=: <'opengl32.dll'
+    if. ('software'-:2!:5'QT_OPENGL') +. 1 0&-:@('opengl32.dll glGetError i'&cd ::cder)'' do.
+      if. (0;'') e.~ <libgles=: 2!:5'QT_OPENGL_DLL' do.
+        libgles=: <'opengl32sw.dll'
+      end.
+    else.
+      libgles=: <'opengl32.dll'
+    end.
+
     OBJ_BITMAP=: 7
     SRCCOPY=: 16bcc0020
     SIZEBITMAP=: 24
@@ -42,20 +49,25 @@ if. UNAME-:'Win' do.
     SetPixelFormat=: 'gdi32 SetPixelFormat > i x i *c'&(15!:0)
     SwapBuffers=: 'gdi32 SwapBuffers > i x'&(15!:0)
 
-    wglCreateContext=: 'opengl32.dll wglCreateContext > x x'&(15!:0)
-    wglDeleteContext=: 'opengl32.dll wglDeleteContext > i x'&(15!:0)
-    wglGetCurrentContext=: 'opengl32.dll wglGetCurrentContext > x'&(15!:0)
-    wglGetCurrentDC=: 'opengl32.dll wglGetCurrentDC > x'&(15!:0)
-    wglMakeCurrent=: 'opengl32.dll wglMakeCurrent > i x x'&(15!:0)
-    wglSwapBuffers=: 'opengl32.dll wglSwapBuffers > i x'&(15!:0)
-    wglUseFontBitmapsA=: 'opengl32.dll wglUseFontBitmapsA i x i i i'&(15!:0)
-    wglUseFontOutlinesA=: 'opengl32.dll wglUseFontOutlinesA i x i i i f f i *f'&(15!:0)
+    wglCreateContext=: ((>libgles),' wglCreateContext > x x')&(15!:0)
+    wglDeleteContext=: ((>libgles),' wglDeleteContext > i x')&(15!:0)
+    wglGetCurrentContext=: ((>libgles),' wglGetCurrentContext > x')&(15!:0)
+    wglGetCurrentDC=: ((>libgles),' wglGetCurrentDC > x')&(15!:0)
+    wglMakeCurrent=: ((>libgles),' wglMakeCurrent > i x x')&(15!:0)
+    wglSwapBuffers=: ((>libgles),' wglSwapBuffers > i x')&(15!:0)
+    wglUseFontBitmapsA=: ((>libgles),' wglUseFontBitmapsA i x i i i')&(15!:0)
+    wglUseFontOutlinesA=: ((>libgles),' wglUseFontOutlinesA i x i i i f f i *f')&(15!:0)
 
-    wglGetProcAddress=: 'opengl32.dll wglGetProcAddress > x *c'&(15!:0)
+    wglGetProcAddress=: ((>libgles),' wglGetProcAddress > x *c')&(15!:0)
   end.
 elseif. UNAME-:'Linux' do.
-  libgles=: <'libGL.so.1 '
-  glXGetProcAddress=: 'libGL.so.1 glXGetProcAddress > x *c'&(15!:0)
+  if. GLES_VERSION do.
+    libgles=: (3=GLES_VERSION){'libGLESv2.so.2';'libGLESv3.so.1'
+    glXGetProcAddress=: 'libEGL.so.1 eglGetProcAddress > x *c'&(15!:0)
+  else.
+    libgles=: <'libGL.so.1'
+    glXGetProcAddress=: ((>libgles),' glXGetProcAddress > x *c')&(15!:0)
+  end.
 elseif. UNAME-:'Android' do.
   libgles=: (3=GLES_VERSION){'libGLESv2.so';'libGLESv3.so'
 elseif. UNAME-:'Darwin' do.
@@ -83,6 +95,7 @@ p=. n }. y
 cddefgl2=: 3 : 0
 y=. dtb (y i. ':'){.y
 if. 0=#y do. '' return. end.
+y=. ('\1';(UNAME-:'Darwin'){'ix') stringreplace y
 n=. y i. ' '
 f=. n {. y
 d=. (_2 * (<_2{.f) e. '_1';'_2';'_3') }. f
