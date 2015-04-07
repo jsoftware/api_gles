@@ -9315,7 +9315,7 @@ m=. m, 0 0, (_2 * far * near % (far - near)), 0
 mat (+/ . *) _4[\m
 )
 
-gl_Ortho=: 3 : 0
+gl_Ortho=: (gl_I'')&$: : (4 : 0)
 mat=. x
 'left right bottom top near far'=. y
 if. (0=right-left) +. (0=top-bottom) +. (0=far-near) do. mat return. end.
@@ -9423,5 +9423,5 @@ UPP=. (% +/&.:*:)up
 s=. f ((1&|.@:[ * _1&|.@:]) - _1&|.@:[ * 1&|.@:]) UPP
 u=. s ((1&|.@:[ * _1&|.@:]) - _1&|.@:[ * 1&|.@:]) f
 M=. _4]\ s, 0, u, 0, (-f), 0 0 0 0 1
-M gl_Translate -eye
+(|:M) gl_mp~ gl_Translate -eye
 )
