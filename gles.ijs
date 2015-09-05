@@ -9390,8 +9390,8 @@ end.
 glLinkProgram program
 glGetProgramiv program; GL_LINK_STATUS; st=. ,_1
 if. ({.st) = GL_FALSE do.
-  glDeleteProgram program
   err=. gl_infolog program
+  glDeleteProgram program
   err;program
 else.
   '';program
