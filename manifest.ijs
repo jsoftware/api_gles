@@ -8,7 +8,7 @@ OpenGL 4.2 and OpenGL ES 3.1 API definitions
 see jwiki http://code.jsoftware.com/wiki/OpenGL%20ES
 )
 
-VERSION=: '1.0.26'
+VERSION=: '1.0.27'
 
 FILES=: 0 : 0
 gles.ijs

@@ -1,12 +1,12 @@
 coclass 'jgles'
 3 : 0''
-GLES_3=. 0-:(1 0&-:@('libGLESv3.so glGetError i'&cd ::cder))`1:@.('Android'-.@-:UNAME) ''
-GLES_3=. GLES_3 +. 0-:(1 0&-:@('libGLESv3.dll glGetError i'&cd ::cder))`1:@.IFUNIX ''
-GLES=. 0-:(1 0&-:@('libGLESv2.dll glGetError i'&cd ::cder))`1:@.IFUNIX ''
-GLES=. GLES +. GLES_3 +. IFIOS +. UNAME-:'Android'
+lib=. (<;._1 ' libGLESv3.so libGLESv3.dylib libGLESv3.so.1 libGLESv3.dll'){::~(;:'Android Darwin Linux') i. <UNAME
+GLES_3=. (2 0-:(lib,' dummy > n')&cd ::cder) ''
+lib=. (<;._1 ' libGLESv2.so libGLESv2.dylib libGLESv2.so.2 libGLESv2.dll'){::~(;:'Android Darwin Linux') i. <UNAME
+GLES=. GLES_3 +. IFIOS +. (2 0-:(lib,' dummy > n')&cd ::cder) ''
 GLES_VERSION=: (GLES_VERSION"_)^:(0=4!:0<'GLES_VERSION') (GLES_3{2 3) * GLES
 if. IFQT do.
-  GLES_VERSION=: GLES_VERSION * 0~: {. ".@:wd 'qopenglmod'
+  GLES_VERSION=: GLES_VERSION * 2= {. ".@:wd ::('0'"_)'qopenglmod'
 end.
 ''
 )
@@ -19,7 +19,7 @@ if. UNAME-:'Win' do.
     libgles=: (3=GLES_VERSION){'libGLESv2.dll';'libGLESv3.dll'
     glXGetProcAddress=: 'libEGL.dll eglGetProcAddress > x *c'&(15!:0)
   else.
-    if. ('software'-:2!:5'QT_OPENGL') +. 1 0&-:@('opengl32.dll glGetError i'&cd ::cder)'' do.
+    if. IFQT *. ('software'-:2!:5'QT_OPENGL') +. 1 0&-:@('opengl32.dll glGetError i'&cd ::cder)'' do.
       if. (0;'') e.~ <libgles=: 2!:5'QT_OPENGL_DLL' do.
         libgles=: <'opengl32sw.dll'
       end.
