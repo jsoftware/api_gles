@@ -1,9 +1,10 @@
 NB. ----------------------------------------------------
 gl_makeshader=: 4 : 0
-shader=. glCreateShader x
+y=. y,{.a.
+shader=. >@{. glCreateShader x
 glShaderSource shader; 1; (,symdat <'y'); <<0
 glCompileShader shader
-glGetShaderiv shader; GL_COMPILE_STATUS; st=. ,_1
+st=. >@{: glGetShaderiv shader; GL_COMPILE_STATUS; st=. ,_1
 if. ({.st) = GL_FALSE do.
   err=. gl_infolog shader
   (err,LF,y);shader
@@ -28,7 +29,7 @@ gl_makeprogram=: 3 : 0
 'vsrc fsrc gsrc tcsrc tesrc csrc'=. 6{.boxopen y
 if. 0= (*#vsrc)+.(*#fsrc) do. 'no shader source';0 return. end.
 try.
-  program=. glCreateProgram''
+  program=. >@{. glCreateProgram''
 catch.
   0;~ 'glCreateProgram error',LF,(5!:6<'glCreateProgram'),LF,'cder : ',":cder'' return.
 end.
@@ -63,7 +64,7 @@ if. #csrc do.
   glAttachShader program ; shader
 end.
 glLinkProgram program
-glGetProgramiv program; GL_LINK_STATUS; st=. ,_1
+st=. >@{: glGetProgramiv program; GL_LINK_STATUS; st=. ,_1
 if. ({.st) = GL_FALSE do.
   err=. gl_infolog program
   glDeleteProgram program
@@ -78,18 +79,18 @@ NB. Display compilation errors from the OpenGL shader compiler
 gl_infolog=: 3 : 0
 ln=. ,_1
 if. glIsShader y do.
-  glGetShaderiv y; GL_INFO_LOG_LENGTH; ln
+  ln=. >@{: glGetShaderiv y; GL_INFO_LOG_LENGTH; ln
 elseif. glIsProgram y do.
-  glGetProgramiv y; GL_INFO_LOG_LENGTH; ln
+  ln=. >@{: glGetProgramiv y; GL_INFO_LOG_LENGTH; ln
 elseif. do.
   'Not a shader or a program' return.
 end.
 
 strInfoLog=. ({.ln)#' '
 if. glIsShader y do.
-  glGetShaderInfoLog y; ({.ln); (<0); strInfoLog
+  strInfoLog=. >@{: glGetShaderInfoLog y; ({.ln); (<0); strInfoLog
 elseif. glIsProgram y do.
-  glGetProgramInfoLog y; ({.ln); (<0); strInfoLog
+  strInfoLog=. >@{: glGetProgramInfoLog y; ({.ln); (<0); strInfoLog
 end.
 err=. strInfoLog
 )
