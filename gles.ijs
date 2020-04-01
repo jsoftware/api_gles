@@ -9400,18 +9400,18 @@ end.
 )
 gl_infolog=: 3 : 0
 ln=. ,_1
-if. glIsShader y do.
+if. >@{. glIsShader y do.
   ln=. >@{: glGetShaderiv y; GL_INFO_LOG_LENGTH; ln
-elseif. glIsProgram y do.
+elseif. >@{. glIsProgram y do.
   ln=. >@{: glGetProgramiv y; GL_INFO_LOG_LENGTH; ln
 elseif. do.
   'Not a shader or a program' return.
 end.
 
 strInfoLog=. ({.ln)#' '
-if. glIsShader y do.
+if. >@{. glIsShader y do.
   strInfoLog=. >@{: glGetShaderInfoLog y; ({.ln); (<0); strInfoLog
-elseif. glIsProgram y do.
+elseif. >@{. glIsProgram y do.
   strInfoLog=. >@{: glGetProgramInfoLog y; ({.ln); (<0); strInfoLog
 end.
 err=. strInfoLog
