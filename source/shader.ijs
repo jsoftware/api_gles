@@ -2,7 +2,7 @@ NB. ----------------------------------------------------
 gl_makeshader=: 4 : 0
 y=. y,{.a.
 shader=. >@{. glCreateShader x
-glShaderSource shader; 1; (,symdat <'y'); <<0
+glShaderSource shader; 1; (,15!:14 <'y'); <<0
 glCompileShader shader
 st=. >@{: glGetShaderiv shader; GL_COMPILE_STATUS; st=. ,_1
 if. ({.st) = GL_FALSE do.
