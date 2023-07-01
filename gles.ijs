@@ -1,8 +1,8 @@
 coclass 'jgles'
 3 : 0''
-lib=. (<;._1 ' libGLESv3.so libGLESv3.dylib libGLESv3.so.1 libGLESv3.dll'){::~(;:'Android Darwin Linux') i. <UNAME
+lib=. (<;._1 ' libGLESv3.so libGLESv3.dylib libGLESv3.dll libGLESv3.so.1'){::~(;:'Android Darwin Win') i. <UNAME
 GLES_3=. (2 0-:(lib,' dummy > n')&cd ::cder) ''
-lib=. (<;._1 ' libGLESv2.so libGLESv2.dylib libGLESv2.so.2 libGLESv2.dll'){::~(;:'Android Darwin Linux') i. <UNAME
+lib=. (<;._1 ' libGLESv2.so libGLESv2.dylib libGLESv2.dll libGLESv2.so.2'){::~(;:'Android Darwin Win') i. <UNAME
 GLES=. GLES_3 +. IFIOS +. (2 0-:(lib,' dummy > n')&cd ::cder) ''
 GLES_VERSION=: (GLES_VERSION"_)^:(0=4!:0<'GLES_VERSION') (GLES_3{2 3) * GLES
 if. IFQT do.
@@ -60,7 +60,7 @@ if. UNAME-:'Win' do.
 
     wglGetProcAddress=: ((>libgles),' wglGetProcAddress > x *c')&(15!:0)
   end.
-elseif. UNAME-:'Linux' do.
+elseif. (<UNAME)e.'Linux';'FreeBSD';'OpenBSD' do.
   if. GLES_VERSION do.
     libgles=: (3=GLES_VERSION){'libGLESv2.so.2';'libGLESv3.so.1'
     glXGetProcAddress=: 'libEGL.so.1 eglGetProcAddress > x *c'&(15!:0)

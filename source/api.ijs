@@ -47,7 +47,7 @@ NB. mesa llvmpipe software rasterizer
 
     wglGetProcAddress=: ((>libgles),' wglGetProcAddress > x *c')&(15!:0)
   end.
-elseif. UNAME-:'Linux' do.
+elseif. (<UNAME)e.'Linux';'FreeBSD';'OpenBSD' do.
   if. GLES_VERSION do.
     libgles=: (3=GLES_VERSION){'libGLESv2.so.2';'libGLESv3.so.1'
     glXGetProcAddress=: 'libEGL.so.1 eglGetProcAddress > x *c'&(15!:0)
